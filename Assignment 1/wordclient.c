@@ -49,6 +49,10 @@ int main() {
         printf("Received: %s\n", response);
     }
 
+    char word_request[MAX_WORD_LENGTH];
+    sprintf(word_request, "WORD%d", 0);
+    sendto(sockfd, word_request, strlen(word_request), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr));
+
     char word[MAX_WORD_LENGTH];
     int word_count = 1;
     FILE *file = fopen("received_file.txt", "w");
@@ -71,7 +75,7 @@ int main() {
 
         fprintf(file, "%s", word);
 
-        char word_request[MAX_WORD_LENGTH];
+        word_request[MAX_WORD_LENGTH];
         sprintf(word_request, "WORD%d", word_count);
         sendto(sockfd, word_request, strlen(word_request), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr));
 

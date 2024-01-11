@@ -49,15 +49,23 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    char buffer[MAX_WORD_LENGTH];
+    char buffer[MAX_WORD_LENGTH], response[MAX_WORD_LENGTH];
     fgets(buffer, MAX_WORD_LENGTH, file); // Read HELLO
     sendto(sockfd, buffer, strlen(buffer), 0, (const struct sockaddr *)&cliaddr, len);
 
     int word_count = 1;
     while (fgets(buffer, MAX_WORD_LENGTH, file) != NULL) {
-        char word_request[MAX_WORD_LENGTH];
-        sprintf(word_request, "WORD%d", word_count);
-        sendto(sockfd, buffer, strlen(buffer), 0, (const struct sockaddr *)&cliaddr, len);
+        n = recvfrom(sockfd, response, MAX_WORD_LENGTH, 0, (struct sockaddr *)&cliaddr, &len);
+        // printf("%d\n",n);
+        if (n == -1) {
+        perror("Filename reception failed");
+        exit(EXIT_FAILURE);
+        }
+        response[n] = '\0';
+        if (strncmp(response, "WORD", 4) == 0)
+        {
+            sendto(sockfd, buffer, strlen(buffer), 0, (const struct sockaddr *)&cliaddr, len);
+        }
 
         ++word_count;
     }
