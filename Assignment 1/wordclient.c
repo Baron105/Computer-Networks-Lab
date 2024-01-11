@@ -27,12 +27,6 @@ int main() {
     servaddr.sin_port = htons(PORT);
     servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // Replace with the server IP
 
-    // bind client to a port
-    if (bind(sockfd, (const struct sockaddr *)&servaddr, sizeof(servaddr)) == -1) {
-        perror("Binding failed");
-        exit(EXIT_FAILURE);
-    }
-
     char filename[MAX_FILENAME_LENGTH];
     printf("Enter filename: ");
     fgets(filename, MAX_FILENAME_LENGTH, stdin);
