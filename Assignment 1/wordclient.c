@@ -44,15 +44,16 @@ int main() {
     response[n] = '\0';
 
     if (strncmp(response, "NOTFOUND", 8) == 0) {
-        printf("File %s Not Found\n", filename);
+        printf("\nFile %s Not Found\n", filename);
         exit(EXIT_FAILURE);
     } else {
-        printf("Received: %s\n", response);
+        printf("\nReceived: %s\n", response);
     }
 
     char word_request[MAX_WORD_LENGTH];
     sprintf(word_request, "WORD%d", 0);
     sendto(sockfd, word_request, strlen(word_request), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr));
+    printf("Sent: %s\n", word_request);
 
     char word[MAX_WORD_LENGTH];
     int lines = 1;
@@ -86,7 +87,7 @@ int main() {
 
     fclose(file);
     close(sockfd);
-    printf("File received and saved as output.txt\n");
+    printf("\nFile received and saved as output.txt\n");
 
     return 0;
 }
