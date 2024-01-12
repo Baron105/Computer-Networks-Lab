@@ -25,7 +25,8 @@ int main() {
 
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(PORT);
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); // Replace with the server IP
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    // loopback address, can change to different IP address if server is running on a different machine
 
     char filename[MAX_FILENAME_LENGTH];
     printf("Enter filename: ");
@@ -54,8 +55,8 @@ int main() {
     sendto(sockfd, word_request, strlen(word_request), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr));
 
     char word[MAX_WORD_LENGTH];
-    int word_count = 1;
-    FILE *file = fopen("received_file.txt", "w");
+    int lines = 1;
+    FILE *file = fopen("output.txt", "w");
     if (file == NULL) {
         perror("File creation failed");
         exit(EXIT_FAILURE);
@@ -68,7 +69,7 @@ int main() {
             exit(EXIT_FAILURE);
         }
         word[n] = '\0';
-
+        printf("Received: %s\n", word);
         if (strncmp(word, "END", 3) == 0) {
             break;
         }
@@ -76,15 +77,16 @@ int main() {
         fprintf(file, "%s", word);
 
         word_request[MAX_WORD_LENGTH];
-        sprintf(word_request, "WORD%d", word_count);
+        sprintf(word_request, "WORD%d", lines);
         sendto(sockfd, word_request, strlen(word_request), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr));
+        printf("Sent: %s\n", word_request);
 
-        ++word_count;
+        ++lines;
     }
 
     fclose(file);
     close(sockfd);
-    printf("File received and saved as received_file.txt\n");
+    printf("File received and saved as output.txt\n");
 
     return 0;
 }

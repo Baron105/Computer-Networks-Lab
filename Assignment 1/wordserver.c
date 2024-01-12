@@ -50,13 +50,14 @@ int main() {
     }
 
     char buffer[MAX_WORD_LENGTH], response[MAX_WORD_LENGTH];
-    fgets(buffer, MAX_WORD_LENGTH, file); // Read HELLO
+    fgets(buffer, MAX_WORD_LENGTH, file);
     sendto(sockfd, buffer, strlen(buffer), 0, (const struct sockaddr *)&cliaddr, len);
 
     int word_count = 1;
     while (fgets(buffer, MAX_WORD_LENGTH, file) != NULL) {
         n = recvfrom(sockfd, response, MAX_WORD_LENGTH, 0, (struct sockaddr *)&cliaddr, &len);
         // printf("%d\n",n);
+        printf("Received Request: %s", response);
         if (n == -1) {
         perror("Filename reception failed");
         exit(EXIT_FAILURE);
@@ -66,6 +67,7 @@ int main() {
         {
             sendto(sockfd, buffer, strlen(buffer), 0, (const struct sockaddr *)&cliaddr, len);
         }
+        printf("Sent: %s", buffer);
 
         ++word_count;
     }
