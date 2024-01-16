@@ -103,12 +103,12 @@ int main()
     printf("Encrypted file created: %s\n", encFilename);
 
     // receive and write file data to the temporary file
-    ssize_t bytesRead;
-    while ((bytesRead = recv(sockfd, buffer, sizeof(buffer), 0)) > 0)
+    int br;
+    while ((br = recv(sockfd, buffer, sizeof(buffer), 0)) > 0)
     {
-        printf("br: %ld\n", bytesRead);
-        if (bytesRead == 0 || bytesRead == -1) break;
-        write(encFile, buffer, bytesRead);
+        // printf("br: %d\n", br);
+        if (br == 0 || br == -1) break;
+        write(encFile, buffer, br);
     }
 
     printf("File data received\n");
