@@ -80,7 +80,7 @@ int main()
         {
             br = recv(newsockfd, buffer, sizeof(buffer), 0);
             // printf("br: %d\n", br);
-            if (br < 100)
+            if (br < 50 && br > 0)
             {
                 write(tempFile, buffer, br);
                 break;
