@@ -79,20 +79,14 @@ int main()
         while (1)
         {
             br = recv(newsockfd, buffer, sizeof(buffer), 0);
-            printf("br: %d\n", br);
+            // printf("br: %d\n", br);
             if (br < 100)
             {
                 write(tempFile, buffer, br);
                 break;
             }
-            else if (br == 0 || br == -1)
-            {
-                break;
-            }
-            else
-            {
-                write(tempFile, buffer, br);
-            }
+            else if (br == 0 || br == -1) break;
+            else write(tempFile, buffer, br);
         }
 
         printf("File data received\n");
