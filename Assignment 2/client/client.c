@@ -13,8 +13,8 @@ int main()
     int sockfd,newsockfd;
     struct sockaddr_in serv_addr;
 
-    // cannot read more than 50 bytes at a time
-    char buffer[50]={'\0'};
+    // cannot read more than 64 bytes at a time
+    char buffer[64]={'\0'};
 
     // creating socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -28,10 +28,10 @@ int main()
 	inet_aton("127.0.0.1", &serv_addr.sin_addr);
 	serv_addr.sin_port = htons(6969);
 
-    char filename[50]; int fd;
+    char filename[64]; int fd;
     while(1)
     {
-        for (int i = 0; i < 50; i++) filename[i] = '\0';
+        for (int i = 0; i < 64; i++) filename[i] = '\0';
         printf("Enter filename: ");
         scanf("%s", filename);
 
@@ -64,7 +64,7 @@ int main()
     printf("Key sent: %d\n", k);
 
     // set buffer to 0
-    memset(buffer, 0, sizeof(buffer));
+    memset(buffer, '\0', sizeof(buffer));
 
     // send filename
     send(sockfd, filename, sizeof(filename), 0);
@@ -77,8 +77,9 @@ int main()
     int rd = 1;
     while (rd)
     {
-        // read 50 bytes into buffer
-        rd = read(fd, buffer, 50);
+        // read 64 bytes into buffer
+        rd = read(fd, buffer, 64);
+        printf("rd: %d\n", rd);
 
         // transfer buffer data to server via send
         send(sockfd, buffer, rd, 0);
@@ -109,6 +110,7 @@ int main()
         // printf("br: %d\n", br);
         if (br == 0 || br == -1) break;
         write(encFile, buffer, br);
+        // printf("br: %d\n", br);
     }
 
     printf("File data received\n");

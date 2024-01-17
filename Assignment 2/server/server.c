@@ -13,8 +13,8 @@ int main()
     int sockfd,newsockfd;
     struct sockaddr_in cli_addr, serv_addr;
 
-    // cannot read more than 100 bytes at a time
-    char buffer[100] = {'\0'};
+    // cannot read more than 64 bytes at a time
+    char buffer[64] = {'\0'};
 
     // creating socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -61,7 +61,7 @@ int main()
         printf("Key received: %d\n", k);
 
         // get the filename from client
-        char filename[100];
+        char filename[64];
         recv(newsockfd, filename, sizeof(buffer), 0);
         memset(buffer, '\0', sizeof(buffer));
 
@@ -79,14 +79,14 @@ int main()
         while (1)
         {
             br = recv(newsockfd, buffer, sizeof(buffer), 0);
-            // printf("br: %d\n", br);
-            if (br < 50 && br > 0)
+            printf("br: %d\n", br);
+            if (br < 64 && br > 0)
             {
                 write(tempFile, buffer, br);
                 break;
             }
             else if (br == 0 || br == -1) break;
-            else write(tempFile, buffer, br);
+            write(tempFile, buffer, br);
         }
 
         printf("File data received\n");
@@ -134,6 +134,7 @@ int main()
         while ((br = read(encFd, buffer, sizeof(buffer))) > 0)
         {
             send(newsockfd, buffer, br, 0);
+            // printf("br: %d\n", br);
         }
 
         close(encFd);
