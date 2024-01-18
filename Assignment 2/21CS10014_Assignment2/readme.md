@@ -18,4 +18,6 @@ Then, run the executable files in two different terminals. Note that the server 
 
 ```./client```
 
-Enter the name of the file to be encrypted and the key to be used for encryption as prompted by the program. The encrypted file will be stored in the same directory as the client program. There is an option to either continue encrypting files or to exit the program. Note that the server can handle multiple clients at the same time.
+Enter the name of the file to be encrypted and the key to be used for encryption as prompted by the program. The encrypted file will be stored in the same directory as the client program. 
+There is an option to either continue encrypting files or to exit the program. 
+Note that the server can handle multiple clients at the same time, so you can run multiple clients on different terminals, until the server limit is reached.
