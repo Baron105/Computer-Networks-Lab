@@ -8,14 +8,14 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
-void set_nonblocking(int sockfd) {
-    int flags = fcntl(sockfd, F_GETFL, 0);
+void set_nonblocking(int *sockfd) {
+    int flags = fcntl(*sockfd, F_GETFL, 0);
     if (flags == -1) {
         perror("fcntl");
         exit(EXIT_FAILURE);
     }
 
-    if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1) {
+    if (fcntl(*sockfd, F_SETFL, flags | O_NONBLOCK) == -1) {
         perror("fcntl");
         exit(EXIT_FAILURE);
     }
@@ -70,16 +70,15 @@ int main()
         // accept the connection 
         new_sock = accept(server_socket , (struct sockaddr *) &client_addr , &sin_len);
 
+        printf("check\n");
         if(new_sock<0)
         {
             perror("Error in accepting the connection\n");
-            printf("check\n");
             close(server_socket);
             exit(EXIT_FAILURE);
         }
 
-        // set the socket to non blocking
-        set_nonblocking(new_sock);
+
 
         // making a fork for concurrency
         int pid ;
@@ -92,8 +91,12 @@ int main()
             char message[2048] = "220 <Domain_name> Service ready\n";
 
             send(new_sock , message , strlen(message) , 0);
+            sleep(5);
+            close(new_sock);
+            exit(0);
 
         }
+        close(new_sock);
 
 
     }
