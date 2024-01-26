@@ -9,9 +9,23 @@
 #include <fcntl.h>
 #include <signal.h>
 
+void set_nonblocking(int sockfd) {
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags == -1) {
+        perror("fcntl");
+        exit(EXIT_FAILURE);
+    }
+
+    if (fcntl(sockfd, F_SETFL, flags | O_NONBLOCK) == -1) {
+        perror("fcntl");
+        exit(EXIT_FAILURE);
+    }
+}
+
+char buf[2048];
+
 void message_220(int client_socket)
 {
-    char buf[2048];
     int n = recv(client_socket , buf , sizeof(buf) , 0);
     buf[n] = '\0';
     printf("%s\n" , buf);
@@ -92,8 +106,25 @@ int main()
                 exit(0);
             }
 
+            // set the socket to non blocking
+            set_nonblocking(client_socket);
+
             // so tcp connection is accepted , so receiver will send the message of 220 
             message_220(client_socket);
+
+            // if the message is not 220 , then close the connection and exit
+            if(strncmp("220" , buf , 3) != 0)
+            {
+                printf("Error in connection\n");
+                close(client_socket);
+                exit(0);
+            }
+            // send the HELO message with server domain name as <ip>@<port>
+            char message[2048];
+            sprintf(message , "HELO %s@%s\n" , inet_ntoa(server_addr.sin_addr) , smtp_port);
+            send(client_socket , message , strlen(message) , 0);
+
+
 
 
 
