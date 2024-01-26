@@ -24,6 +24,7 @@ void set_nonblocking(int sockfd) {
 int main()
 {
     int server_socket , client_socket ;
+    int new_sock;
     struct sockaddr_in server_addr  , client_addr ;
     socklen_t sin_len = sizeof(client_addr);
 
@@ -67,11 +68,12 @@ int main()
     while(1)
     {
         // accept the connection 
-        int new_sock = accept(server_socket , (struct sockaddr *) &client_addr , &sin_len);
+        new_sock = accept(server_socket , (struct sockaddr *) &client_addr , &sin_len);
 
         if(new_sock<0)
         {
             perror("Error in accepting the connection\n");
+            printf("check\n");
             close(server_socket);
             exit(EXIT_FAILURE);
         }
