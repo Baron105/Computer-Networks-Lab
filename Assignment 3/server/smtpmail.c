@@ -51,7 +51,34 @@ int main()
 
     printf("SMTP server ready and listening for connections\n");
 
-    
+    while(1)
+    {
+        // accept the connection 
+        int new_sock = accept(server_socket , (struct sockaddr *) &client_addr , &sin_len);
+
+        if(new_sock<0)
+        {
+            perror("Error in accepting the connection\n");
+            close(server_socket);
+            exit(EXIT_FAILURE);
+        }
+
+        // making a fork for concurrency
+        int pid ;
+        if((pid=fork())==0)
+        {
+            // close the old socket in the child process
+            close(server_socket);
+
+            // connection established
+            // send 220 message
+            char message[2048] = "220 <IITKGP.edu> Service ready\n";
+            send(new_sock , message , strlen(message) , 0);
+            
+        }
+
+
+    }
 
 
 }

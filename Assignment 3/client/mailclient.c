@@ -9,6 +9,14 @@
 #include <fcntl.h>
 #include <signal.h>
 
+void message_220(int client_socket)
+{
+    char buf[2048];
+    int n = recv(client_socket , buf , sizeof(buf) , 0);
+    buf[n] = '\0';
+    printf("%s\n" , buf);
+}
+
 int main()
 {
     char server_ip[100];
@@ -83,6 +91,9 @@ int main()
                 perror("Unable to connect to server");
                 exit(0);
             }
+
+            // so tcp connection is accepted , so receiver will send the message of 220 
+            message_220(client_socket);
 
 
 
