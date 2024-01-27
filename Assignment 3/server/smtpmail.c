@@ -91,7 +91,6 @@ int main()
             char message[2048] = "220 <Domain_name> Service ready\n";
 
             send(new_sock , message , strlen(message) , 0);
-            sleep(5);
             close(new_sock);
             exit(0);
 
