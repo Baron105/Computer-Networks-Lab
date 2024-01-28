@@ -77,7 +77,7 @@ int main()
 
     while (1)
     {
-        printf("1.Manage mails\n2.Send mail\n3.Quit\n");
+        printf("\n1.Manage mails\n2.Send mail\n3.Quit\n");
 
         int choice;
         scanf("%d", &choice);
