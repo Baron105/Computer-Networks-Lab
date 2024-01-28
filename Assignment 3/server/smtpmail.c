@@ -4,10 +4,55 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
 
+// make a mailbox for a user
+void mkmailbox(const char *username) {
+    char path[42];
+    snprintf(path, sizeof(path), "%s/mailbox", username);
+
+    FILE *mailbox = fopen(path, "w");
+    if (mailbox == NULL) {
+        perror("Error creating mailbox");
+        exit(EXIT_FAILURE);
+    }
+
+    fclose(mailbox);
+}
+
+// make mailboxes for all users from user.txt
+void mkuserdir(const char *filename) {
+    FILE *file;
+    char line[42];
+    int n = 0;
+
+    file = fopen(filename, "r");
+    if (file == NULL) {
+        perror("Error opening user.txt");
+        exit(EXIT_FAILURE);
+    }
+
+    while (fgets(line, sizeof(line), file) != NULL) {
+        char username[20];
+        sscanf(line, "%s", username);
+
+        if (mkdir(username, 0700) != 0) {
+            perror("Error creating user directory");
+            exit(EXIT_FAILURE);
+        }
+
+        mkmailbox(username);
+
+        n++;
+    }
+
+    fclose(file);
+}
+
+// set the socket to non-blocking
 void set_nonblocking(int *sockfd)
 {
     int flags = fcntl(*sockfd, F_GETFL, 0);
@@ -26,6 +71,9 @@ void set_nonblocking(int *sockfd)
 
 int main()
 {
+    // make mailboxes for all users
+    mkuserdir("user.txt");
+
     int server_socket, client_socket;
     int new_sock;
     struct sockaddr_in server_addr, client_addr;
