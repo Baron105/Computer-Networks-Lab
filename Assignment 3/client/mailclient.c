@@ -40,22 +40,22 @@ int main()
     char smtp_port[100];
     char pop3_port[100];
 
-    printf("Enter the server ip : ");
+    printf("Enter the server ip: ");
     scanf("%s", server_ip);
 
-    printf("Enter the smtp port : ");
+    printf("Enter the smtp port: ");
     scanf("%s", smtp_port);
 
-    printf("Enter the pop3 port : ");
+    printf("Enter the pop3 port: ");
     scanf("%s", pop3_port);
 
     char username[100];
     char password[100];
 
-    printf("Enter the username : ");
+    printf("Enter the username: ");
     scanf("%s", username);
 
-    printf("Enter the password : ");
+    printf("Enter the password: ");
     scanf("%s", password);
 
     int client_socket;
@@ -94,7 +94,9 @@ int main()
 
         else if (choice == 1)
         {
+            
         }
+
         else if (choice == 2)
         {
             // connect to the server
