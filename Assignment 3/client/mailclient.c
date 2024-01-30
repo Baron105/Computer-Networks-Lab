@@ -46,17 +46,17 @@ int main()
     printf("Enter the smtp port: ");
     scanf("%s", smtp_port);
 
-    printf("Enter the pop3 port: ");
-    scanf("%s", pop3_port);
+    // printf("Enter the pop3 port: ");
+    // scanf("%s", pop3_port);
 
-    char username[100];
-    char password[100];
+    // char username[100];
+    // char password[100];
 
-    printf("Enter the username: ");
-    scanf("%s", username);
+    // printf("Enter the username: ");
+    // scanf("%s", username);
 
-    printf("Enter the password: ");
-    scanf("%s", password);
+    // printf("Enter the password: ");
+    // scanf("%s", password);
 
     int client_socket;
     struct sockaddr_in server_addr, client_addr;
@@ -106,23 +106,22 @@ int main()
                 exit(0);
             }
 
-            // set the socket to non blocking
-            set_nonblocking(client_socket);
-
-            // so tcp connection is accepted , so receiver will send the message of 220
-            message_220(client_socket);
-
             // if the message is not 220 , then close the connection and exit
-            if (strncmp("220", buf, 3) != 0)
+            
+            memset(buf, 0, sizeof(buf));
+
+            int len = recv(client_socket, buf, sizeof(buf), 0);
+
+            if (strncmp(buf, "220", 3) != 0)
             {
                 printf("Error in connection\n");
                 close(client_socket);
                 exit(0);
             }
-            // send the HELO message with server domain name as <ip>@<port>
-            char message[2048];
-            sprintf(message, "HELO %s@%s\n", inet_ntoa(server_addr.sin_addr), smtp_port);
-            send(client_socket, message, strlen(message), 0);
+
+            printf("%s\n", buf);
+
+            close(client_socket);
         }
     }
 }
