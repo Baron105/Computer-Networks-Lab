@@ -122,6 +122,8 @@ int main()
         // accept the connection
         new_sock = accept(server_socket, (struct sockaddr *)&client_addr, &sin_len);
 
+        printf("Got connection from (%s , %d)\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
+
         if (new_sock < 0)
         {
             perror("Error in accepting the connection\n");
