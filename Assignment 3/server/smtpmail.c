@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <time.h>
 
 // // make a mailbox for a user
 // void mkmailbox(const char *username) {
@@ -98,7 +99,6 @@ int main()
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);
 
-
     // bind the socket
     if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1)
     {
@@ -143,17 +143,18 @@ int main()
 
             send(new_sock, msg, strlen(msg), 0);
 
-            //revc HELO
+            // revc HELO
             memset(buf, 0, sizeof(buf));
             int len;
-            while(1)
+            while (1)
             {
                 len = recv(new_sock, buf, sizeof(buf), 0);
                 // printf("%s\n", buf);
-                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    break;
             }
 
-            if(strncmp(buf, "HELO", 4) != 0)
+            if (strncmp(buf, "HELO", 4) != 0)
             {
                 printf("Not proper response\nclosing connection");
                 close(new_sock);
@@ -161,22 +162,23 @@ int main()
             }
 
             printf("%s\n", buf);
-            
+
             // send 250 OK
             strcpy(msg, "250 OK hello ");
-            strcat(msg, buf+5);
-            strcat(msg,"\r\n");
+            strcat(msg, buf + 5);
+            strcat(msg, "\r\n");
             send(new_sock, msg, strlen(msg), 0);
 
             // recv MAIL FROM
             memset(buf, 0, sizeof(buf));
-            while(1)
+            while (1)
             {
                 len = recv(new_sock, buf, sizeof(buf), 0);
-                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    break;
             }
-            
-            if(strncmp(buf, "MAIL FROM", 9) != 0)
+
+            if (strncmp(buf, "MAIL FROM", 9) != 0)
             {
                 printf("Not proper response\nclosing connection");
                 close(new_sock);
@@ -184,23 +186,28 @@ int main()
             }
 
             printf("%s\n", buf);
+            char sender[100];
+            strcpy(sender, buf + 11);
+            // set last char to null
+            sender[strlen(sender) - 2] = '\0';
 
             // send 250 OK
             strcpy(msg, "250");
-            strcat(msg, buf+10);
+            strcat(msg, buf + 10);
             strcat(msg, " Sender OK\r\n");
 
             send(new_sock, msg, strlen(msg), 0);
 
             // recv RCPT TO
             memset(buf, 0, sizeof(buf));
-            while(1)
+            while (1)
             {
                 len = recv(new_sock, buf, sizeof(buf), 0);
-                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    break;
             }
 
-            if(strncmp(buf, "RCPT TO", 7) != 0)
+            if (strncmp(buf, "RCPT TO", 7) != 0)
             {
                 printf("Not proper response\nclosing connection");
                 close(new_sock);
@@ -208,6 +215,8 @@ int main()
             }
 
             printf("%s\n", buf);
+            char receiver[100];
+            strcpy(receiver, buf + 9);
 
             // send 250 OK
             strcpy(msg, "250 root... Recipient OK\r\n");
@@ -216,13 +225,14 @@ int main()
 
             // recv DATA
             memset(buf, 0, sizeof(buf));
-            while(1)
+            while (1)
             {
                 len = recv(new_sock, buf, sizeof(buf), 0);
-                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    break;
             }
 
-            if(strncmp(buf, "DATA", 4) != 0)
+            if (strncmp(buf, "DATA", 4) != 0)
             {
                 printf("Not proper response\nclosing connection");
                 close(new_sock);
@@ -236,20 +246,65 @@ int main()
 
             send(new_sock, msg, strlen(msg), 0);
 
-
             // recv mail
-            memset(buf, 0, sizeof(buf));
-            while(1)
+
+            // open mailbox
+            FILE *fp;
+            char path[42];
+
+            // extract directory from sender by removing everything after @
+            char sendername[20];
+            for (int i = 0; i < strlen(sender); i++)
             {
-                while(1)
+                if (sender[i] == '@')
+                {
+                    sendername[i] = '\0';
+                    break;
+                }
+                sendername[i] = sender[i];
+            }
+
+            snprintf(path, sizeof(path), "%s/mailbox", sendername);
+
+            fp = fopen(path, "a");
+            if (fp == NULL)
+            {
+                perror("Error opening mailbox");
+                exit(EXIT_FAILURE);
+            }
+
+            memset(buf, 0, sizeof(buf));
+            while (1)
+            {
+                while (1)
                 {
                     memset(buf, 0, sizeof(buf));
                     len = recv(new_sock, buf, sizeof(buf), 0);
-                    if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                    if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                        break;
                 }
-                buf[len-2]='\0';
+                buf[len - 2] = '\0';
                 printf("%s\n", buf);
-                if(strncmp(buf,"\r\n",2)==0)
+
+                // store to user's mailbox
+                write(fileno(fp), buf, strlen(buf));
+                write(fileno(fp), "\n", 1);
+
+                // add time to the message after subject is received
+                if (strncmp(buf, "Subject", 7) == 0)
+                {
+                    // Received: <time>
+                    time_t t = time(NULL);
+                    struct tm *tm = localtime(&t);
+                    char time[64];
+                    strftime(time, sizeof(time), "%c", tm);
+
+                    write(fileno(fp), "Received: ", 10);
+                    write(fileno(fp), time, strlen(time));
+                    write(fileno(fp), "\n", 1);
+                }
+
+                if (strncmp(buf, "\r\n", 2) == 0)
                 {
                     break;
                 }
@@ -260,8 +315,6 @@ int main()
             strcpy(msg, "250 OK Message accepted for delivery\r\n");
 
             send(new_sock, msg, strlen(msg), 0);
-
-
 
             close(new_sock);
             exit(0);
