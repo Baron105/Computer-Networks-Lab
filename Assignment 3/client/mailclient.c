@@ -31,17 +31,17 @@ char buf[2048];
 int main()
 {
     char server_ip[100];
-    char smtp_port[100];
-    char pop3_port[100];
+    int smtp_port[100];
+    int pop3_port[100];
 
     printf("Enter the server ip: ");
     scanf("%s", server_ip);
 
     printf("Enter the smtp port: ");
-    scanf("%s", smtp_port);
+    scanf("%d", &smtp_port);
 
     // printf("Enter the pop3 port: ");
-    // scanf("%s", pop3_port);
+    // scanf("%d", &pop3_port);
 
     // char username[100];
     // char password[100];
@@ -66,8 +66,9 @@ int main()
 
     // server info
     server_addr.sin_family = AF_INET;
-    inet_aton(server_ip, &server_addr.sin_addr);
-    server_addr.sin_port = htons(atoi(smtp_port));
+    // inet_aton(server_ip, &server_addr.sin_addr);
+    server_addr.sin_addr.s_addr = inet_addr(server_ip);
+    server_addr.sin_port = htons(smtp_port);
 
     while (1)
     {
@@ -93,6 +94,7 @@ int main()
 
         else if (choice == 2)
         {
+            printf("check\n");
             // connect to the server
             if ((connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr))) < 0)
             {
