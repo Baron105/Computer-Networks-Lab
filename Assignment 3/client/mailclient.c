@@ -27,12 +27,6 @@ void set_nonblocking(int sockfd)
 
 char buf[2048];
 
-void message_220(int client_socket)
-{
-    int n = recv(client_socket, buf, sizeof(buf), 0);
-    buf[n] = '\0';
-    printf("%s\n", buf);
-}
 
 int main()
 {
@@ -110,7 +104,14 @@ int main()
             
             memset(buf, 0, sizeof(buf));
 
-            int len = recv(client_socket, buf, sizeof(buf), 0);
+            int len ;
+
+            while(1)
+            {
+                len = recv(client_socket, buf, sizeof(buf), 0);
+                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+            }
+            
 
             if (strncmp(buf, "220", 3) != 0)
             {
@@ -120,6 +121,148 @@ int main()
             }
 
             printf("%s\n", buf);
+
+            char msg[2048] = "HELO <Domain_name>\r\n";
+            send(client_socket, msg, strlen(msg), 0);
+
+            //recv 250
+            memset(buf, 0, sizeof(buf));
+            while(1)
+            {
+                len = recv(client_socket, buf, sizeof(buf), 0);
+                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+            }
+
+            if (strncmp(buf, "250", 3) != 0)
+            {
+                printf("Error in connection\n");
+                close(client_socket);
+                exit(0);
+            }
+
+            printf("%s\n", buf);
+
+            // ask user to enter the sender's mail id
+
+            char sender[100];
+            printf("Enter the sender's mail id: ");
+            scanf("%s", sender);
+
+            // send MAIL FROM
+            memset(msg, 0, sizeof(msg));
+            strcpy(msg, "MAIL FROM: ");
+            strcat(msg, sender);
+            strcat(msg, "\r\n");
+
+            send(client_socket, msg, strlen(msg), 0);
+
+            // recv 250
+            memset(buf, 0, sizeof(buf));
+            while(1)
+            {
+                len = recv(client_socket, buf, sizeof(buf), 0);
+                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+            }
+
+            if (strncmp(buf, "250", 3) != 0)
+            {
+                printf("Error in connection\n");
+                close(client_socket);
+                exit(0);
+            }
+
+            printf("%s\n", buf);
+
+            // ask user to enter the receiver's mail id
+
+            char receiver[100];
+            printf("Enter the receiver's mail id: ");
+            scanf("%s", receiver);
+
+            // send RCPT TO
+            memset(msg, 0, sizeof(msg));
+            strcpy(msg, "RCPT TO: ");
+            strcat(msg, receiver);
+            strcat(msg, "\r\n");
+
+            send(client_socket, msg, strlen(msg), 0);
+
+            // recv 250
+            memset(buf, 0, sizeof(buf));
+            while(1)
+            {
+                len = recv(client_socket, buf, sizeof(buf), 0);
+                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+            }
+
+            if (strncmp(buf, "250", 3) != 0)
+            {
+                printf("Error in connection\n");
+                close(client_socket);
+                exit(0);
+            }
+
+            printf("%s\n", buf);
+
+            // send DATA
+            memset(msg, 0, sizeof(msg));
+            strcpy(msg, "DATA\r\n");
+
+            send(client_socket, msg, strlen(msg), 0);
+
+            // recv 354
+            memset(buf, 0, sizeof(buf));
+            while(1)
+            {
+                len = recv(client_socket, buf, sizeof(buf), 0);
+                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+            }
+
+            if (strncmp(buf, "354", 3) != 0)
+            {
+                printf("Error in connection\n");
+                close(client_socket);
+                exit(0);
+            }
+
+            printf("%s\n", buf);
+
+            printf("Enter the message:(strictly adhere to the mail format) \n");
+
+
+            // taking msg input from user line by line and sending
+            while(1)
+            {
+                memset(msg, 0, sizeof(msg));
+                scanf("\n%[^\n]s", msg);
+                strcat(msg, "\r\n");
+                if(strncmp(msg, ".\r\n", 3)==0)
+                {
+                    char * msg2 = "\r\n.\r\n";
+                    send(client_socket, msg2, strlen(msg2), 0);
+                    break;
+
+                }
+                send(client_socket, msg, strlen(msg), 0);
+            }
+
+            // recv 250
+            memset(buf, 0, sizeof(buf));
+            while(1)
+            {
+                len = recv(client_socket, buf, sizeof(buf), 0);
+                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+            }
+
+            if (strncmp(buf, "250", 3) != 0)
+            {
+                printf("Error in connection\n");
+                close(client_socket);
+                exit(0);
+            }
+
+            printf("%s\n", buf);
+
 
             close(client_socket);
         }
