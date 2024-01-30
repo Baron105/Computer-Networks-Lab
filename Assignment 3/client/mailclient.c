@@ -31,8 +31,8 @@ char buf[2048];
 int main()
 {
     char server_ip[100];
-    int smtp_port[100];
-    int pop3_port[100];
+    int smtp_port;
+    int pop3_port;
 
     printf("Enter the server ip: ");
     scanf("%s", server_ip);
@@ -64,10 +64,10 @@ int main()
 
     // binding the client (optional in this case)
 
+
     // server info
     server_addr.sin_family = AF_INET;
-    // inet_aton(server_ip, &server_addr.sin_addr);
-    server_addr.sin_addr.s_addr = inet_addr(server_ip);
+    inet_aton(server_ip, &server_addr.sin_addr);
     server_addr.sin_port = htons(smtp_port);
 
     while (1)
@@ -94,13 +94,13 @@ int main()
 
         else if (choice == 2)
         {
-            printf("check\n");
             // connect to the server
             if ((connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr))) < 0)
             {
                 perror("Unable to connect to server");
                 exit(0);
             }
+            printf("Connected to the server\n");
 
             // if the message is not 220 , then close the connection and exit
             
