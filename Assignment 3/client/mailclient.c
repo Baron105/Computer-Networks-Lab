@@ -200,6 +200,7 @@ int main()
                 if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
                     break;
             }
+            buf[len-2]='\0';
 
             if (strncmp(buf, "250", 3) != 0)
             {
