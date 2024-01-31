@@ -321,6 +321,7 @@ int main()
             send(new_sock, msg, strlen(msg), 0);
 
             close(new_sock);
+            printf("Connection closed\n");
             exit(0);
         }
         close(new_sock);
