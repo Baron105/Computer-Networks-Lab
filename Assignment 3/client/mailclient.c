@@ -54,19 +54,11 @@ int main()
     int client_socket;
     struct sockaddr_in server_addr, client_addr;
 
-    // opening a socket
-    if ((client_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-    {
-        perror("Unable to create socket\n");
-        exit(0);
-    }
+    
 
     // binding the client (optional in this case)
 
-    // server info
-    server_addr.sin_family = AF_INET;
-    inet_aton(server_ip, &server_addr.sin_addr);
-    server_addr.sin_port = htons(smtp_port);
+    
 
     while (1)
     {
@@ -91,6 +83,17 @@ int main()
 
         else if (choice == 2)
         {
+            // opening a socket
+            if ((client_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+            {
+                perror("Unable to create socket\n");
+                exit(0);
+            }
+            
+            // server info
+            server_addr.sin_family = AF_INET;
+            inet_aton(server_ip, &server_addr.sin_addr);
+            server_addr.sin_port = htons(smtp_port);
             // connect to the server
             if ((connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr))) < 0)
             {
@@ -266,6 +269,7 @@ int main()
             printf("%s\n", buf);
 
             close(client_socket);
+            printf("Connection closed\n");
         }
     }
 }
