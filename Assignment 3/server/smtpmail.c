@@ -253,18 +253,18 @@ int main()
             char path[42];
 
             // extract directory from sender by removing everything after @
-            char sendername[20];
-            for (int i = 0; i < strlen(sender); i++)
+            char receivername[20];
+            for (int i = 0; i < strlen(receiver); i++)
             {
-                if (sender[i] == '@')
+                if (receiver[i] == '@')
                 {
-                    sendername[i] = '\0';
+                    receivername[i] = '\0';
                     break;
                 }
-                sendername[i] = sender[i];
+                receivername[i] = receiver[i];
             }
 
-            snprintf(path, sizeof(path), "%s/mailbox", sendername);
+            snprintf(path, sizeof(path), "%s/mailbox", receivername);
 
             fp = fopen(path, "a");
             if (fp == NULL)
@@ -287,7 +287,11 @@ int main()
                 printf("%s\n", buf);
 
                 // store to user's mailbox
-                write(fileno(fp), buf, strlen(buf));
+                if (strncmp(buf, "\r\n", 2) == 0)
+                {
+                    write(fileno(fp), ".", 1);
+                }
+                else write(fileno(fp), buf, strlen(buf));
                 write(fileno(fp), "\n", 1);
 
                 // add time to the message after subject is received
