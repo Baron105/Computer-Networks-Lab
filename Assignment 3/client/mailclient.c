@@ -27,7 +27,6 @@ void set_nonblocking(int sockfd)
 
 char buf[2048];
 
-
 int main()
 {
     char server_ip[100];
@@ -64,7 +63,6 @@ int main()
 
     // binding the client (optional in this case)
 
-
     // server info
     server_addr.sin_family = AF_INET;
     inet_aton(server_ip, &server_addr.sin_addr);
@@ -89,7 +87,6 @@ int main()
 
         else if (choice == 1)
         {
-            
         }
 
         else if (choice == 2)
@@ -103,17 +100,17 @@ int main()
             printf("Connected to the server\n");
 
             // if the message is not 220 , then close the connection and exit
-            
+
             memset(buf, 0, sizeof(buf));
 
-            int len ;
+            int len;
 
-            while(1)
+            while (1)
             {
                 len = recv(client_socket, buf, sizeof(buf), 0);
-                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    break;
             }
-            
 
             if (strncmp(buf, "220", 3) != 0)
             {
@@ -127,12 +124,13 @@ int main()
             char msg[2048] = "HELO <Domain_name>\r\n";
             send(client_socket, msg, strlen(msg), 0);
 
-            //recv 250
+            // recv 250
             memset(buf, 0, sizeof(buf));
-            while(1)
+            while (1)
             {
                 len = recv(client_socket, buf, sizeof(buf), 0);
-                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    break;
             }
 
             if (strncmp(buf, "250", 3) != 0)
@@ -160,10 +158,11 @@ int main()
 
             // recv 250
             memset(buf, 0, sizeof(buf));
-            while(1)
+            while (1)
             {
                 len = recv(client_socket, buf, sizeof(buf), 0);
-                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    break;
             }
 
             if (strncmp(buf, "250", 3) != 0)
@@ -191,10 +190,11 @@ int main()
 
             // recv 250
             memset(buf, 0, sizeof(buf));
-            while(1)
+            while (1)
             {
                 len = recv(client_socket, buf, sizeof(buf), 0);
-                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    break;
             }
 
             if (strncmp(buf, "250", 3) != 0)
@@ -214,10 +214,11 @@ int main()
 
             // recv 354
             memset(buf, 0, sizeof(buf));
-            while(1)
+            while (1)
             {
                 len = recv(client_socket, buf, sizeof(buf), 0);
-                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    break;
             }
 
             if (strncmp(buf, "354", 3) != 0)
@@ -231,29 +232,28 @@ int main()
 
             printf("Enter the message:(strictly adhere to the mail format) \n");
 
-
             // taking msg input from user line by line and sending
-            while(1)
+            while (1)
             {
                 memset(msg, 0, sizeof(msg));
                 scanf("\n%[^\n]s", msg);
                 strcat(msg, "\r\n");
-                if(strncmp(msg, ".\r\n", 3)==0)
+                if (strncmp(msg, ".\r\n", 3) == 0)
                 {
-                    char * msg2 = "\r\n.\r\n";
+                    char *msg2 = "\r\n.\r\n";
                     send(client_socket, msg2, strlen(msg2), 0);
                     break;
-
                 }
                 send(client_socket, msg, strlen(msg), 0);
             }
 
             // recv 250
             memset(buf, 0, sizeof(buf));
-            while(1)
+            while (1)
             {
                 len = recv(client_socket, buf, sizeof(buf), 0);
-                if(buf[len-1] == '\n' && buf[len-2] == '\r')break;
+                if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    break;
             }
 
             if (strncmp(buf, "250", 3) != 0)
@@ -264,7 +264,6 @@ int main()
             }
 
             printf("%s\n", buf);
-
 
             close(client_socket);
         }
