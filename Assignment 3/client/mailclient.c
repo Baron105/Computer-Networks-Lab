@@ -27,17 +27,28 @@ void set_nonblocking(int sockfd)
 
 char buf[2048];
 
-int main()
+int main(int argc, char *argv[])
 {
     char server_ip[100];
     int smtp_port;
     int pop3_port;
 
-    printf("Enter the server ip: ");
-    scanf("%s", server_ip);
+    // printf("Enter the server ip: ");
+    // scanf("%s", server_ip);
+    // server_ip = "127.0.0.1";
 
-    printf("Enter the smtp port: ");
-    scanf("%d", &smtp_port);
+    // 3 command line arguments server_ip, smtp_port, pop3_port
+    if (argc != 4)
+    {
+        printf("Usage: %s <server_ip> <smtp_port> <pop3_port>\n", argv[0]);
+        exit(0);
+    }
+    else
+    {
+        strcpy(server_ip, argv[1]);
+        smtp_port = atoi(argv[2]);
+        pop3_port = atoi(argv[3]);
+    }
 
     // printf("Enter the pop3 port: ");
     // scanf("%d", &pop3_port);
