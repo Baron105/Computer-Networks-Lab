@@ -10,49 +10,6 @@
 #include <fcntl.h>
 #include <time.h>
 
-// // make a mailbox for a user
-// void mkmailbox(const char *username) {
-//     char path[42];
-//     snprintf(path, sizeof(path), "%s/mailbox", username);
-
-//     FILE *mailbox = fopen(path, "w");
-//     if (mailbox == NULL) {
-//         perror("Error creating mailbox");
-//         exit(EXIT_FAILURE);
-//     }
-
-//     fclose(mailbox);
-// }
-
-// // make mailboxes for all users from user.txt
-// void mkuserdir(const char *filename) {
-//     FILE *file;
-//     char line[42];
-//     int n = 0;
-
-//     file = fopen(filename, "r");
-//     if (file == NULL) {
-//         perror("Error opening user.txt");
-//         exit(EXIT_FAILURE);
-//     }
-
-//     while (fgets(line, sizeof(line), file) != NULL) {
-//         char username[20];
-//         sscanf(line, "%s", username);
-
-//         if (mkdir(username, 0700) != 0) {
-//             perror("Error creating user directory");
-//             exit(EXIT_FAILURE);
-//         }
-
-//         mkmailbox(username);
-
-//         n++;
-//     }
-
-//     fclose(file);
-// }
-
 // set the socket to non-blocking
 // void set_nonblocking(int *sockfd)
 // {
@@ -70,10 +27,8 @@
 //     }
 // }
 
-int main()
+int main(int argc, char *argv[])
 {
-    // make mailboxes for all users
-    // mkuserdir("user.txt");
 
     int server_socket, client_socket;
     int new_sock;
@@ -92,8 +47,13 @@ int main()
 
     // setting the server address
     int port;
-    printf("Enter the port number : ");
-    scanf("%d", &port);
+    // printf("Enter the port number: ");
+    // scanf("%d", &port);
+
+    if (argc == 2)
+    {
+        port = atoi(argv[1]);
+    }
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
@@ -122,6 +82,7 @@ int main()
         // accept the connection
         new_sock = accept(server_socket, (struct sockaddr *)&client_addr, &sin_len);
 
+        // identify the client
         printf("Got connection from (%s , %d)\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
         if (new_sock < 0)
@@ -143,7 +104,7 @@ int main()
 
             send(new_sock, msg, strlen(msg), 0);
 
-            // revc HELO
+            // recv HELO
             memset(buf, 0, sizeof(buf));
             int len;
             while (1)
