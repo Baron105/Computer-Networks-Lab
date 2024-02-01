@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
     else
     {
-        printf("Usage: ./smtpmail <port>\n");
+        printf("Usage: %s <smtp_port>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
