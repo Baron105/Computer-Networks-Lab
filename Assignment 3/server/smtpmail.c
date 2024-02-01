@@ -10,23 +10,6 @@
 #include <fcntl.h>
 #include <time.h>
 
-// set the socket to non-blocking
-// void set_nonblocking(int *sockfd)
-// {
-//     int flags = fcntl(*sockfd, F_GETFL, 0);
-//     if (flags == -1)
-//     {
-//         perror("fcntl");
-//         exit(EXIT_FAILURE);
-//     }
-
-//     if (fcntl(*sockfd, F_SETFL, flags | O_NONBLOCK) == -1)
-//     {
-//         perror("fcntl");
-//         exit(EXIT_FAILURE);
-//     }
-// }
-
 int main(int argc, char *argv[])
 {
 
@@ -45,10 +28,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    // setting the server address
     int port;
-    // printf("Enter the port number: ");
-    // scanf("%d", &port);
 
     if (argc == 2)
     {
@@ -58,7 +38,7 @@ int main(int argc, char *argv[])
     else
     {
         printf("Usage: %s <smtp_port>\n", argv[0]);
-        exit(EXIT_FAILURE);
+        exit(0);
     }
 
     server_addr.sin_family = AF_INET;
@@ -81,7 +61,7 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    printf("SMTP server ready and listening for connections\n");
+    printf("SMTP server ready and listening for connections\n\n");
 
     while (1)
     {
@@ -106,7 +86,10 @@ int main(int argc, char *argv[])
             close(server_socket);
 
             // connection established
-            char msg[2048] = "220 <Domain_name> Service ready\r\n";
+            // inet_ntoa converts the ip address to string
+            char msg[2048] = "220 ";
+            strcat(msg, inet_ntoa(server_addr.sin_addr));
+            strcat(msg, " ..Service Ready\r\n");
 
             send(new_sock, msg, strlen(msg), 0);
 
@@ -159,8 +142,8 @@ int main(int argc, char *argv[])
             sender[strlen(sender) - 2] = '\0';
 
             // send 250 OK
-            strcpy(msg, "250");
-            strcat(msg, buf + 10);
+            strcpy(msg, "250 ");
+            strcat(msg, sender);
             strcat(msg, " Sender OK\r\n");
 
             send(new_sock, msg, strlen(msg), 0);
@@ -185,10 +168,45 @@ int main(int argc, char *argv[])
             char receiver[100];
             strcpy(receiver, buf + 9);
 
-            // send 250 OK
-            strcpy(msg, "250 root... Recipient OK\r\n");
+            // extract directory from sender by removing everything after @
+            char receivername[20];
+            char path[42];
+            for (int i = 0; i < strlen(receiver); i++)
+            {
+                if (receiver[i] == '@')
+                {
+                    receivername[i] = '\0';
+                    break;
+                }
+                receivername[i] = receiver[i];
+            }
 
-            send(new_sock, msg, strlen(msg), 0);
+            snprintf(path, sizeof(path), "%s/mailbox", receivername);
+
+            memset(msg, 0, sizeof(msg));
+
+            // check if their mailbox exists inside the subdir
+            // open mailbox
+            FILE *fp;
+
+            fp = fopen(path, "a");
+            if (fp == NULL)
+            {
+                // send 550 No such user
+                printf("No such user\nWaiting for new connection\n\n");
+                strcpy(msg, "550 No such user\r\n");
+                send(new_sock, msg, strlen(msg), 0);
+                // close(new_sock);
+                // exit(0);
+            }
+            else 
+            {
+                // send 250 OK
+                strcpy(msg, "250 root... Recipient OK\r\n");
+                send(new_sock, msg, strlen(msg), 0);
+            }
+
+            // fp will be used to write the mail to the user's mailbox later
 
             // recv DATA
             memset(buf, 0, sizeof(buf));
@@ -215,51 +233,34 @@ int main(int argc, char *argv[])
 
             // recv mail
 
-            // open mailbox
-            FILE *fp;
-            char path[42];
-
-            // extract directory from sender by removing everything after @
-            char receivername[20];
-            for (int i = 0; i < strlen(receiver); i++)
-            {
-                if (receiver[i] == '@')
-                {
-                    receivername[i] = '\0';
-                    break;
-                }
-                receivername[i] = receiver[i];
-            }
-
-            snprintf(path, sizeof(path), "%s/mailbox", receivername);
-
-            fp = fopen(path, "a");
-            if (fp == NULL)
-            {
-                perror("Error opening mailbox");
-                exit(EXIT_FAILURE);
-            }
-
             memset(buf, 0, sizeof(buf));
             while (1)
             {
+                memset(buf, '\0', sizeof(buf));
                 while (1)
                 {
-                    memset(buf, 0, sizeof(buf));
-                    len = recv(new_sock, buf, sizeof(buf), 0);
-                    if (buf[len - 1] == '\n' && buf[len - 2] == '\r')
+                    // receive character by character till \r\n
+                    char c[10];
+                    recv(new_sock, c, 1, 0);
+                    c[1] = '\0';
+                    // printf("%s", c);
+
+                    strcat(buf, c);
+                    if (c[0] == '\n')
                         break;
                 }
-                buf[len - 2] = '\0';
-                printf("%s\n", buf);
+                // len = recv(new_sock, buf, sizeof(buf), 0);
+                printf("%s", buf);
 
                 // store to user's mailbox
-                if (strncmp(buf, "\r\n", 2) == 0)
+                if (strncmp(buf, ".\r\n", 3) == 0)
                 {
-                    write(fileno(fp), ".", 1);
+                    write(fileno(fp), ".\r\n", 3);
+                    break;
                 }
-                else write(fileno(fp), buf, strlen(buf));
-                write(fileno(fp), "\n", 1);
+                else
+                    write(fileno(fp), buf, strlen(buf));
+                // write(fileno(fp), "\n", 1);
 
                 // add time to the message after subject is received
                 if (strncmp(buf, "Subject", 7) == 0)
@@ -274,11 +275,6 @@ int main(int argc, char *argv[])
                     write(fileno(fp), time, strlen(time));
                     write(fileno(fp), "\n", 1);
                 }
-
-                if (strncmp(buf, "\r\n", 2) == 0)
-                {
-                    break;
-                }
             }
             printf("\n\n");
 
@@ -287,9 +283,25 @@ int main(int argc, char *argv[])
 
             send(new_sock, msg, strlen(msg), 0);
 
+            // recv QUIT msg
+            memset(buf, 0, sizeof(buf));
+            len = recv(new_sock, buf, sizeof(buf), 0);
+            printf("%s\n", buf);
+
+            char ip_addr[20];
+            inet_ntop(AF_INET, (struct sockaddr_in *)&server_addr.sin_addr, ip_addr, 16);
+
+            // send 221
+            strcpy(msg, "221 ");
+            strcat(msg, ip_addr);
+            strcat(msg, " closing connection\r\n");
+
+            send(new_sock, msg, strlen(msg), 0);
+
             close(new_sock);
             printf("Connection closed\n");
             exit(0);
+            memset(buf, 0, sizeof(buf));
         }
         close(new_sock);
     }
