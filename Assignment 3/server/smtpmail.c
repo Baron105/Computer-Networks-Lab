@@ -55,6 +55,12 @@ int main(int argc, char *argv[])
         port = atoi(argv[1]);
     }
 
+    else
+    {
+        printf("Usage: ./smtpmail <port>\n");
+        exit(EXIT_FAILURE);
+    }
+
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = INADDR_ANY;
     server_addr.sin_port = htons(port);
