@@ -68,7 +68,190 @@ int main(int argc, char *argv[])
         {
             // pop3 server part
 
-            // will be implemented later
+            if ((client_socket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+            {
+                perror("Unable to create socket\n");
+                exit(0);
+            }
+
+            // server info
+            server_addr.sin_family = AF_INET;
+            inet_aton(server_ip, &server_addr.sin_addr);
+            server_addr.sin_port = htons(pop3_port);
+            // connect to the server
+            if ((connect(client_socket, (struct sockaddr *)&server_addr, sizeof(server_addr))) < 0)
+            {
+                perror("Unable to connect to server");
+                exit(0);
+            }
+
+            // receive ready from server
+            // if the message is not +OK , then close the connection and exit
+            memset(buf, 0, sizeof(buf));
+            int len;
+
+            len = recv(client_socket, buf, sizeof(buf), 0);
+
+            if (strncmp(buf, "+OK", 3) != 0)
+            {
+                printf("Error in connection\n");
+                close(client_socket);
+                exit(0);
+            }
+
+            printf("%s\n", buf);
+
+            // send USER name
+            memset(msg, 0, sizeof(msg));
+            strcpy(msg, "USER ");
+            strcat(msg, username);
+            strcat(msg, "\r\n");
+
+            send(client_socket, msg, strlen(msg), 0);
+
+            // check if the user is valid
+            memset(buf, 0, sizeof(buf));
+            len = recv(client_socket, buf, sizeof(buf), 0);
+            buf[len - 2] = '\0';
+
+            if (strncmp(buf, "+OK", 3) != 0)
+            {
+                printf("No such user\n%s\n", buf);
+                close(client_socket);
+                exit(0);
+            }
+
+            printf("%s\n", buf);
+
+            // send PASS password
+            memset(msg, 0, sizeof(msg));
+            strcpy(msg, "PASS ");
+            strcat(msg, password);
+            strcat(msg, "\r\n");
+
+            send(client_socket, msg, strlen(msg), 0);
+
+            // check if the password is valid
+            memset(buf, 0, sizeof(buf));
+            len = recv(client_socket, buf, sizeof(buf), 0);
+            buf[len - 2] = '\0';
+
+            if (strncmp(buf, "+OK", 3) != 0)
+            {
+                printf("Error in authentication\n%s\n", buf);
+                close(client_socket);
+                exit(0);
+            }
+
+            printf("%s\n", buf);
+
+            while (1)
+            {
+                // send LIST
+                memset(msg, 0, sizeof(msg));
+                // memset(buf, 0, sizeof(buf));
+                strcpy(msg, "LIST\r\n");
+                send(client_socket, msg, strlen(msg), 0);
+
+                // receive the list of mails character by character
+                printf("List of mails:\n");
+                printf("%-5s\t%-25s\t%-30s\t%-25s\n", "Sl.No", "From", "Received at", "Subject");
+
+                while (1)
+                {
+                    // keep receiving the list of mails till \r\n#
+                    memset(buf, 0, sizeof(buf));
+                    len = recv(client_socket, buf, sizeof(buf), 0);
+
+                    if (buf[len - 1] == '#')
+                    {
+                        buf[len - 1] = '\0';
+                        printf("%s\n", buf);
+                        break;
+                    }
+                    else
+                    {
+                        printf("%s", buf);
+                    }
+                }
+                int flag = 0;
+                int flag2 = 0;
+                while (1)
+                {
+                    // ask user to enter the mail number he wishes to see
+                    int mailno;
+                    printf("Enter the mail number you wish to see:(-1 to exit) ");
+                    scanf("%d", &mailno);
+
+                    if (mailno == -1)
+                    {
+                        flag = 1;
+                        break;
+                    }
+
+                    // check if mailno is valid by sending RETR to the server
+                    memset(msg, 0, sizeof(msg));
+                    sprintf(msg, "RETR %d\r\n", mailno);
+                    send(client_socket, msg, strlen(msg), 0);
+
+                    // receive the mail
+                    flag2 = 0;
+                    while (1)
+                    {
+                        memset(buf, 0, sizeof(buf));
+                        len = recv(client_socket, buf, sizeof(buf), 0);
+                        if (strncmp(buf, "-ERR", 4) == 0)
+                        {
+                            printf("Error in mail number\n");
+                            break;
+                        }
+                        if (buf[len - 1] == '#')
+                        {
+                            buf[len - 1] = '\0';
+                            printf("%s\n", buf);
+                            flag2 = 1;
+                            break;
+                        }
+                        else
+                        {
+                            printf("%s", buf);
+                        }
+                    }
+                    if (flag2 == 1)
+                        break;
+                }
+                if(flag==1)
+                {
+                    // send QUIT
+                    memset(msg, 0, sizeof(msg));
+                    strcpy(msg, "QUIT\r\n");
+
+                    send(client_socket, msg, strlen(msg), 0);
+
+                    // recv OK
+                    memset(buf, 0, sizeof(buf));
+                    len = recv(client_socket, buf, sizeof(buf), 0);
+                    buf[len-2]='\0';
+
+                    if (strncmp(buf, "+OK", 3) != 0)
+                    {
+                        printf("Error msg\n");
+                        close(client_socket);
+                        exit(0);
+                    }
+
+                    printf("%s\n", buf);
+
+                    break;
+                }
+                
+                if (flag == 1)
+                    break;
+            }
+
+            // close the connection
+            close(client_socket);
+            printf("Connection closed\n");
         }
 
         else if (choice == 2)
