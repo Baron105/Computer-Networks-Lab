@@ -139,9 +139,17 @@ int main(int argc, char *argv[])
 
             printf("%s\n", buf);
             char sender[100];
-            strcpy(sender, buf + 11);
-            // set last char to null
-            sender[strlen(sender) - 2] = '\0';
+            // iterate through buf to get the sender from buf
+            int m = 0;
+            int n = 0;
+            while (buf[m] != '<')
+                m++;
+            while (buf[m] != '>')
+            {
+                sender[n++] = buf[m++];
+            }
+            sender[n++] = '>';
+            sender[n] = '\0';
 
             // send 250 OK
             strcpy(msg, "250 ");
@@ -170,22 +178,22 @@ int main(int argc, char *argv[])
 
             printf("%s\n", buf);
             char receiver[100];
-            strcpy(receiver, buf + 9);
-
-            // extract directory from sender by removing everything after @
-            char receivername[20];
-            char path[42];
-            for (int i = 0; i < strlen(receiver); i++)
+            // iterate through buf to get the receiver from buf
+            m = 0;
+            n = 0;
+            while (buf[m] != '<')
+                m++;
+            m++;
+            while (buf[m] != '@')
             {
-                if (receiver[i] == '@')
-                {
-                    receivername[i] = '\0';
-                    break;
-                }
-                receivername[i] = receiver[i];
+                receiver[n++] = buf[m++];
             }
 
-            snprintf(path, sizeof(path), "%s/mailbox", receivername);
+            receiver[n] = '\0';
+
+            char path[42];
+
+            snprintf(path, sizeof(path), "%s/mailbox", receiver);
 
             memset(msg, 0, sizeof(msg));
 
@@ -309,6 +317,8 @@ int main(int argc, char *argv[])
             strcpy(msg, "221 ");
             strcat(msg, ip_addr);
             strcat(msg, " closing connection\r\n");
+
+            fclose(fp);
 
             send(new_sock, msg, strlen(msg), 0);
 
