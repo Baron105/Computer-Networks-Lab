@@ -93,11 +93,6 @@ int main()
 		clilen = sizeof(cli_addr);
 		newsockfd = accept(sockfd, (struct sockaddr *)&cli_addr,
 						   &clilen);
-		printf("%d", newsockfd);
-
-		int nnewsockfd = accept(newsockfd, (struct sockaddr *)&cli_addr,
-						   &clilen);
-		printf("%d", nnewsockfd);
 
 		if (newsockfd < 0)
 		{
