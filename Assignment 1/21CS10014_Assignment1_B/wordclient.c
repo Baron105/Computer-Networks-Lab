@@ -25,7 +25,7 @@ int main() {
 
     servaddr.sin_family = AF_INET;
     servaddr.sin_port = htons(PORT);
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    inet_pton(AF_INET, "127.0.0.1", &servaddr.sin_addr);
     // loopback address, can change to different IP address if server is running on a different machine
 
     char filename[MAX_FILENAME_LENGTH];
