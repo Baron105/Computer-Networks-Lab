@@ -62,7 +62,7 @@ int main()
 		buf[i] = '\0';
 	recv(sockfd, buf, 100, 0);
 	printf("%s\n", buf);
-
+	sleep(10);
 	strcpy(buf, "Message from client");
 	send(sockfd, buf, strlen(buf) + 1, 0);
 

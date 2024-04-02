@@ -121,6 +121,9 @@ int main()
 
 			strcpy(buf, "Message from server");
 			send(newsockfd, buf, strlen(buf) + 1, 0);
+			// shutdown receiving part of the socket
+			shutdown(newsockfd, SHUT_WR);
+			sleep(10);
 
 			/* We again initialize the buffer, and receive a
 			   message from the client.
